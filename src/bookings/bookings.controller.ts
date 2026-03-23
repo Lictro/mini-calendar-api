@@ -17,13 +17,18 @@ import { JwtAuthGuard } from 'src/auth/jwt.guard';
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
-  // This endpoint retrieves all bookings for the authenticated user.
+  // Retrieves all bookings for the authenticated user.
+  // Requires a valid JWT cookie.
+  // Returns an array of bookings.
   @Get()
   async findAll(@Req() req) {
     return this.bookingsService.findAllByUser(req.user.sub);
   }
 
-  // This endpoint creates a new booking for the authenticated user.
+  // Creates a new booking for the authenticated user.
+  // Expects a JSON body with `title`, `startTime`, and `endTime`.
+  // Converts `startTime` and `endTime` to Date objects before saving.
+  // Returns the created booking object.
   @Post()
   async create(@Req() req, @Body() body: CreateBookingDto) {
     return this.bookingsService.createBooking(
@@ -34,7 +39,9 @@ export class BookingsController {
     );
   }
 
-  // This endpoint deletes a booking by its ID for the authenticated user.
+  // Deletes a booking by its ID for the authenticated user.
+  // Requires a valid JWT cookie.
+  // Returns a confirmation or the deleted booking.
   @Delete(':id')
   async remove(@Req() req, @Param('id') id: string) {
     return this.bookingsService.removeBooking(req.user.sub, parseInt(id, 10));

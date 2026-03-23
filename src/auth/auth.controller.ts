@@ -16,9 +16,12 @@ import { JwtAuthGuard } from './jwt.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // This endpoint handles the callback from Google after the user has authenticated.
-  // It exchanges the authorization code for tokens, retrieves the user's profile information,
-  // and then generates a JWT for our application.
+    // Handles Google OAuth callback after user authentication
+  // 1. Exchanges the authorization code for Google access/refresh tokens
+  // 2. Retrieves the user's Google profile info
+  // 3. Creates or finds the user in our database
+  // 4. Generates a JWT and sets it in an HTTP-only cookie
+  // 5. Redirects the user to the frontend dashboard
   @Get('google/callback')
   async googleCallback(@Query('code') code: string, @Res() res: Response) {
     const redirectUri = `http://localhost:8080/auth/google/callback`;
@@ -45,12 +48,18 @@ export class AuthController {
     res.redirect('http://localhost:3000/dashboard');
   }
 
+  // Returns the current authenticated user's info
+  // Requires a valid JWT cookie
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@Req() req) {
     return { user: req.user };
   }
 
+  // Logs out the user
+  // 1. Revokes the user's Google access token
+  // 2. Clears the JWT cookie
+  // 3. Returns a confirmation message
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(@Req() req: Request, @Res() res: Response) {
